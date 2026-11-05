@@ -411,58 +411,77 @@
         };
 
         const sceneEl = document.getElementById('scene');
-        const bodyEl = document.getElementById('body');
-        const chapterTitleEl = document.getElementById('chapter-title');
+    const bodyEl = document.getElementById('body');
+    const chapterTitleEl = document.getElementById('chapter-title');
 
-        function loadNode(nodeId) {
-            const node = story[nodeId];
-            
-            // Mise à jour du chapitre (fond et titre)
-            bodyEl.className = 'chap' + node.chapter;
-            chapterTitleEl.innerText = node.chapTitle;
-
-            // Vider la scène
-            sceneEl.innerHTML = '';
-
-            // Création du bloc PNJ
-            const npcContainer = document.createElement('div');
-            npcContainer.className = 'npc-container';
-            
-            const npcName = document.createElement('div');
-            npcName.className = 'npc-name';
-            npcName.innerText = node.npc;
-
-            const npcBubble = document.createElement('div');
-            npcBubble.className = 'bubble-npc';
-            npcBubble.innerHTML = `
-                <span class="fr-text">${node.fr}</span>
-                <span class="uk-text">${node.uk}</span>
-            `;
-
-            npcContainer.appendChild(npcName);
-            npcContainer.appendChild(npcBubble);
-            sceneEl.appendChild(npcContainer);
-
-            // Création des choix du joueur
-            const choicesContainer = document.createElement('div');
-            choicesContainer.className = 'choices-container';
-
-            node.choices.forEach(choice => {
-                const btn = document.createElement('button');
-                btn.className = 'choice-btn';
-                btn.innerHTML = `
-                    <span class="fr-text">${choice.fr}</span>
-                    <span class="uk-text">${choice.uk}</span>
-                `;
-                btn.onclick = () => loadNode(choice.next);
-                choicesContainer.appendChild(btn);
-            });
-
-            sceneEl.appendChild(choicesContainer);
+    // Fonction de synthèse vocale
+    function lireTexte(texte) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Coupe l'audio précédent si on clique vite
+            const utterance = new SpeechSynthesisUtterance(texte);
+            utterance.lang = 'fr-FR'; 
+            utterance.rate = 0.85; // Débit ralenti pour faciliter la compréhension A2
+            window.speechSynthesis.speak(utterance);
         }
+    }
 
-        // Lancer le jeu au chargement
-        window.onload = () => loadNode("1.1");
+    function loadNode(nodeId) {
+        const node = story[nodeId];
+        
+        bodyEl.className = 'chap' + node.chapter;
+        chapterTitleEl.innerText = node.chapTitle;
+        sceneEl.innerHTML = '';
+
+        const npcContainer = document.createElement('div');
+        npcContainer.className = 'npc-container';
+        
+        const npcName = document.createElement('div');
+        npcName.className = 'npc-name';
+        npcName.innerText = node.npc;
+
+        const npcBubble = document.createElement('div');
+        npcBubble.className = 'bubble-npc';
+        npcBubble.style.cursor = 'pointer'; 
+        
+        // Déclenche la voix au clic sur la bulle du personnage
+        npcBubble.onclick = () => lireTexte(node.fr); 
+        
+        npcBubble.innerHTML = `
+            <span class="fr-text">🔊 ${node.fr}</span>
+            <span class="uk-text">${node.uk}</span>
+        `;
+
+        npcContainer.appendChild(npcName);
+        npcContainer.appendChild(npcBubble);
+        sceneEl.appendChild(npcContainer);
+
+        const choicesContainer = document.createElement('div');
+        choicesContainer.className = 'choices-container';
+
+        node.choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            
+            btn.innerHTML = `
+                <span class="fr-text">🔊 ${choice.fr}</span>
+                <span class="uk-text">${choice.uk}</span>
+            `;
+            
+            btn.onclick = () => {
+                lireTexte(choice.fr); // Lit la réponse choisie par Olha
+                
+                // Délai de 600ms pour laisser la voix démarrer avant d'afficher la suite
+                setTimeout(() => { 
+                    if(choice.next) loadNode(choice.next); 
+                }, 600); 
+            };
+            choicesContainer.appendChild(btn);
+        });
+
+        sceneEl.appendChild(choicesContainer);
+    }
+
+    window.onload = () => loadNode("1.1");
     </script>
 </body>
 </html>
