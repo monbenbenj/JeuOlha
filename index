@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Une Journée d'Olha - TCF A2</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-chap1: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); /* Matin clair */
+            --bg-chap2: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); /* Ville/Journée */
+            --bg-chap3: linear-gradient(135deg, #2c3e50 0%, #fd746c 100%); /* Soir chaleureux */
+            --bubble-npc: #ffffff;
+            --bubble-player: #4CAF50;
+            --bubble-player-hover: #45a049;
+        }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background 0.8s ease-in-out;
+            background: var(--bg-chap1);
+            color: #333;
+        }
+
+        /* Classes de fond dynamique gérées par JS */
+        body.chap1 { background: var(--bg-chap1); }
+        body.chap2 { background: var(--bg-chap2); }
+        body.chap3 { background: var(--bg-chap3); }
+
+        #game-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            box-sizing: border-box;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.2em;
+            color: #2c3e50;
+        }
+
+        .chapter-title {
+            font-size: 0.9em;
+            color: #555;
+            font-weight: bold;
+        }
+
+        .scene {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            gap: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* Bulle du PNJ (Personnage Non Joueur) */
+        .npc-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .npc-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            margin-left: 15px;
+            color: #2c3e50;
+            background: rgba(255, 255, 255, 0.7);
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.9em;
+        }
+
+        .bubble-npc {
+            background: var(--bubble-npc);
+            padding: 15px 20px;
+            border-radius: 20px;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 85%;
+            position: relative;
+        }
+
+        /* Choix du joueur (Olha) */
+        .choices-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .choice-btn {
+            background: var(--bubble-player);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            border-radius: 20px;
+            border-bottom-right-radius: 5px;
+            text-align: right;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background 0.2s;
+            animation: slideUp 0.5s ease-out;
+            align-self: flex-end;
+            max-width: 90%;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.98);
+            background: var(--bubble-player-hover);
+        }
+
+        /* Typographie bilingue */
+        .fr-text {
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .uk-text {
+            font-size: 0.85em;
+            color: rgba(0, 0, 0, 0.6);
+            font-style: italic;
+            display: block;
+        }
+
+        .choice-btn .uk-text {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+    </style>
+</head>
+<body class="chap1" id="body">
+
+    <div id="game-container">
+        <div class="header">
+            <h1 id="app-title">Une Journée d'Olha</h1>
+            <div id="chapter-title" class="chapter-title">Chapitre 1 : À la maison</div>
+        </div>
+
+        <div class="scene" id="scene">
+            <!-- Le contenu généré par JS ira ici -->
+        </div>
+    </div>
+
+    <script>
+        const story = {
+            // ================= CHAPITRE 1 : À LA MAISON =================
+            "1.1": {
+                chapter: 1, chapTitle: "Chapitre 1 : À la maison", npc: "Tymofii",
+                fr: "Maman, qu'est-ce qu'on mange ce matin ? J'ai faim !",
+                uk: "Мамо, що ми їмо сьогодні вранці? Я голодний!",
+                choices: [
+                    { fr: "Il y a des céréales et du lait sur la table.", uk: "На столі є пластівці та молоко.", next: "1.2" },
+                    { fr: "Je prépare des tartines avec de la confiture.", uk: "Я готую бутерброди з варенням.", next: "1.2" }
+                ]
+            },
+            "1.2": {
+                chapter: 1, chapTitle: "Chapitre 1 : À la maison", npc: "Natalia",
+                fr: "Tu as vu mon sac de cours ? Je dois me préparer pour le lycée !",
+                uk: "Ти бачила мій шкільний рюкзак? Мені треба збиратися до ліцею!",
+                choices: [
+                    { fr: "Il est dans le salon, près du canapé.", uk: "Він у вітальні, біля дивана.", next: "1.3" },
+                    { fr: "Regarde dans ta chambre, sur ton bureau.", uk: "Подивись у своїй кімнаті, на столі.", next: "1.3" }
+                ]
+            },
+            "1.3": {
+                chapter: 1, chapTitle: "Chapitre 1 : À la maison", npc: "Tymofii",
+                fr: "On part à quelle heure pour le collège ?",
+                uk: "О котрій годині ми виходимо до колежу?",
+                choices: [
+                    { fr: "Nous partons dans dix minutes, habillez-vous !", uk: "Ми виходимо через десять хвилин, одягайтеся!", next: "1.4" },
+                    { fr: "Tout de suite ! Mettez vos manteaux.", uk: "Негайно! Одягайте куртки.", next: "1.4" }
+                ]
+            },
+            "1.4": {
+                chapter: 1, chapTitle: "Chapitre 1 : À la maison", npc: "Natalia & Tymofii",
+                fr: "À ce soir, maman ! Bonne journée à ton stage !",
+                uk: "До вечора, мамо! Гарного дня на стажуванні!",
+                choices: [
+                    { fr: "Bonne journée à vous deux. Travaillez bien à l'école !", uk: "Гарного дня вам обом. Добре навчайтеся в школі!", next: "2.1" },
+                    { fr: "À ce soir mes chéris, faites attention sur la route.", uk: "До вечора, мої любі, будьте обережні на дорозі.", next: "2.1" }
+                ]
+            },
+
+            // ================= CHAPITRE 2 : AU CENTRE DE SEDAN =================
+            // Voisine
+            "2.1": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Voisine",
+                fr: "Bonjour Olha ! Vous allez bien ce matin ?",
+                uk: "Добрий ранок, Олю! Як ваші справи сьогодні вранці?",
+                choices: [
+                    { fr: "Bonjour ! Ça va très bien, merci. Et vous ?", uk: "Добрий ранок! Дуже добре, дякую. А у вас?", next: "2.2" },
+                    { fr: "Je suis un peu pressée, mais ça va.", uk: "Я трохи поспішаю, але все добре.", next: "2.2" }
+                ]
+            },
+            "2.2": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Voisine",
+                fr: "Vous partez travailler à Sedan aujourd'hui ?",
+                uk: "Ви їдете сьогодні на роботу до Седана?",
+                choices: [
+                    { fr: "Oui, je fais un stage pour améliorer mon français.", uk: "Так, я проходжу стажування, щоб покращити свою французьку.", next: "2.3" },
+                    { fr: "Oui, c'est une formation pour le métier du soin à la personne.", uk: "Так, це навчання для роботи у сфері догляду за людьми.", next: "2.3" }
+                ]
+            },
+            "2.3": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Voisine",
+                fr: "C'est courageux ! Le bus passe à quelle heure ?",
+                uk: "Це сміливо! О котрій годині прибуває автобус?",
+                choices: [
+                    { fr: "Il passe à 8h15, je dois me dépêcher.", uk: "Він прибуває о 8:15, мені треба поспішати.", next: "2.4" },
+                    { fr: "Dans cinq minutes, je ne dois pas le rater.", uk: "Через п'ять хвилин, я не повинна на нього спізнитися.", next: "2.4" }
+                ]
+            },
+            "2.4": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Voisine",
+                fr: "Alors je ne vous retiens pas. Bon courage pour le TCF !",
+                uk: "Тоді не затримую вас. Успіхів на іспиті TCF!",
+                choices: [
+                    { fr: "Merci beaucoup, à bientôt !", uk: "Дуже дякую, до скорої зустрічі!", next: "2.5" },
+                    { fr: "Merci, passez une bonne journée !", uk: "Дякую, гарного вам дня!", next: "2.5" }
+                ]
+            },
+            // Professeure
+            "2.5": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Professeure",
+                fr: "Bonjour Olha, bienvenue au stage. Avez-vous fait les exercices pour aujourd'hui ?",
+                uk: "Доброго дня, Олю, ласкаво просимо на стажування. Ви зробили вправи на сьогодні?",
+                choices: [
+                    { fr: "Bonjour Madame. Oui, j'ai tout fait hier soir.", uk: "Доброго дня, мадам. Так, я все зробила вчора ввечері.", next: "2.6" },
+                    { fr: "Oui, mais j'ai eu quelques difficultés avec la grammaire.", uk: "Так, але у мене були деякі труднощі з граматикою.", next: "2.6" }
+                ]
+            },
+            "2.6": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Professeure",
+                fr: "D'accord, nous allons corriger ensemble. Avez-vous une question ?",
+                uk: "Добре, ми перевіримо разом. У вас є запитання?",
+                choices: [
+                    { fr: "Oui, comment on prononce ce mot, s'il vous plaît ?", uk: "Так, підкажіть, будь ласка, як вимовляється це слово?", next: "2.7" },
+                    { fr: "Pouvez-vous expliquer le passé composé ?", uk: "Чи можете ви пояснити минулий час (passé composé)?", next: "2.7" }
+                ]
+            },
+            "2.7": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Professeure",
+                fr: "Très bonne question, je vais l'expliquer au tableau. Vous comprenez ?",
+                uk: "Дуже гарне запитання, я поясню це на дошці. Ви розумієте?",
+                choices: [
+                    { fr: "Oui, c'est plus clair maintenant, merci.", uk: "Так, тепер зрозуміліше, дякую.", next: "2.8" },
+                    { fr: "Pouvez-vous répéter plus lentement, s'il vous plaît ?", uk: "Чи можете ви повторити повільніше, будь ласка?", next: "2.8" }
+                ]
+            },
+            "2.8": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "La Professeure",
+                fr: "Parfait. Maintenant, parlez un peu avec vos camarades pour pratiquer.",
+                uk: "Чудово. Тепер трохи поговоріть зі своїми одногрупниками для практики.",
+                choices: [
+                    { fr: "D'accord, je vais me présenter à eux.", uk: "Добре, я піду представлюся їм.", next: "2.9" },
+                    { fr: "Avec plaisir, c'est un bon exercice.", uk: "Із задоволенням, це гарна вправа.", next: "2.9" }
+                ]
+            },
+            // Camarade 1 (Maria)
+            "2.9": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Maria (Camarade)",
+                fr: "Salut, moi c'est Maria. Tu viens d'où ?",
+                uk: "Привіт, я Марія. Звідки ти?",
+                choices: [
+                    { fr: "Salut Maria, je m'appelle Olha et je viens d'Ukraine.", uk: "Привіт, Маріє, мене звати Оля, я з України.", next: "2.10" }
+                ]
+            },
+            "2.10": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Maria (Camarade)",
+                fr: "Enchantée ! Tu habites à Charleville-Mézières ?",
+                uk: "Дуже приємно! Ти живеш у Шарлевіль-Мезьєрі?",
+                choices: [
+                    { fr: "Oui, j'habite là-bas avec mes deux enfants.", uk: "Так, я живу там зі своїми двома дітьми.", next: "2.11" },
+                    { fr: "Oui, au centre-ville, ce n'est pas très loin.", uk: "Так, у центрі міста, це не дуже далеко.", next: "2.11" }
+                ]
+            },
+            "2.11": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Maria (Camarade)",
+                fr: "Moi aussi ! Tu veux travailler dans quoi après le TCF ?",
+                uk: "Я теж! Ким ти хочеш працювати після TCF?",
+                choices: [
+                    { fr: "Je veux travailler dans le soin à la personne.", uk: "Я хочу працювати у сфері догляду за людьми.", next: "2.12" },
+                    { fr: "Je voudrais aider les personnes âgées ou malades.", uk: "Я хотіла б допомагати літнім або хворим людям.", next: "2.12" }
+                ]
+            },
+            "2.12": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Maria (Camarade)",
+                fr: "C'est un très beau métier ! On prend un café à la pause ?",
+                uk: "Це дуже гарна професія! Вип'ємо кави на перерві?",
+                choices: [
+                    { fr: "Avec plaisir, j'adore le café !", uk: "Із задоволенням, я обожнюю каву!", next: "2.13" },
+                    { fr: "Oui, bonne idée, allons-y.", uk: "Так, гарна ідея, ходімо.", next: "2.13" }
+                ]
+            },
+            // Camarade 2 (Ahmed)
+            "2.13": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Ahmed (Camarade)",
+                fr: "Bonjour Olha. Tu as compris l'exercice de la professeure ?",
+                uk: "Привіт, Олю. Ти зрозуміла вправу викладачки?",
+                choices: [
+                    { fr: "Oui, un peu. Tu as besoin d'aide ?", uk: "Так, трохи. Тобі потрібна допомога?", next: "2.14" },
+                    { fr: "C'était un peu difficile, mais ça va.", uk: "Було трохи складно, але нормально.", next: "2.14" }
+                ]
+            },
+            "2.14": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Ahmed (Camarade)",
+                fr: "Oui, je n'ai pas compris la dernière phrase du texte.",
+                uk: "Так, я не зрозумів останнє речення тексту.",
+                choices: [
+                    { fr: "Regarde, il faut conjuguer ce verbe au présent.", uk: "Дивись, це дієслово треба відміняти в теперішньому часі.", next: "2.15" },
+                    { fr: "Demandons à la professeure ensemble si tu veux.", uk: "Давай разом запитаємо у викладачки, якщо хочеш.", next: "2.15" }
+                ]
+            },
+            "2.15": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Ahmed (Camarade)",
+                fr: "Merci Olha. Tu passes le TCF le mois prochain ?",
+                uk: "Дякую, Олю. Ти складаєш TCF наступного місяця?",
+                choices: [
+                    { fr: "Oui, je dois valider le niveau A2 pour ma formation.", uk: "Так, мені потрібно підтвердити рівень A2 для мого навчання.", next: "2.16" }
+                ]
+            },
+            "2.16": {
+                chapter: 2, chapTitle: "Chapitre 2 : Au centre de Sedan", npc: "Ahmed (Camarade)",
+                fr: "Bonne chance à nous ! Le stage est fini, tu rentres chez toi ?",
+                uk: "Нехай нам щастить! Стажування закінчилося, ти їдеш додому?",
+                choices: [
+                    { fr: "Oui, mais je vais voir mon ami Benjamin d'abord. À demain !", uk: "Так, але спочатку я зустрінуся зі своїм другом Бенжаменом. До завтра!", next: "3.1" }
+                ]
+            },
+
+            // ================= CHAPITRE 3 : CHEZ BENJAMIN =================
+            "3.1": {
+                chapter: 3, chapTitle: "Chapitre 3 : Chez Benjamin", npc: "Benjamin",
+                fr: "Coucou Olha ! Comment s'est passée ta journée de stage à Sedan ?",
+                uk: "Привіт, Олю! Як пройшов твій день стажування в Седані?",
+                choices: [
+                    { fr: "C'était bien mais fatigant. J'ai beaucoup parlé en français.", uk: "Було добре, але виснажливо. Я багато говорила французькою.", next: "3.2" },
+                    { fr: "C'était super, j'ai rencontré de nouveaux camarades.", uk: "Було чудово, я познайомилася з новими одногрупниками.", next: "3.2" }
+                ]
+            },
+            "3.2": {
+                chapter: 3, chapTitle: "Chapitre 3 : Chez Benjamin", npc: "Benjamin",
+                fr: "Génial ! Je t'ai préparé du café. Et regarde : j'ai acheté des éclairs au café !",
+                uk: "Круто! Я приготував тобі каву. І дивись: я купив кавові еклери!",
+                choices: [
+                    { fr: "Oh merci, c'est mon dessert préféré ! Tu es gentil.", uk: "О, дякую, це мій улюблений десерт! Ти дуже милий.", next: "3.3" },
+                    { fr: "Miam ! Un éclair et un bon café, c'est parfait pour se détendre.", uk: "Ням! Еклер і добра кава — це ідеально, щоб розслабитися.", next: "3.3" }
+                ]
+            },
+            "3.3": {
+                chapter: 3, chapTitle: "Chapitre 3 : Chez Benjamin", npc: "Benjamin",
+                fr: "Alors, tu as pu t'entraîner pour l'examen du TCF ?",
+                uk: "Тож, ти змогла потренуватися перед іспитом TCF?",
+                choices: [
+                    { fr: "Oui, nous avons fait des exercices de grammaire.", uk: "Так, ми робили граматичні вправи.", next: "3.4" },
+                    { fr: "Oui, j'ai posé des questions et j'ai aidé un ami.", uk: "Так, я ставила запитання і допомогла другу.", next: "3.4" }
+                ]
+            },
+            "3.4": {
+                chapter: 3, chapTitle: "Chapitre 3 : Chez Benjamin", npc: "Benjamin",
+                fr: "Je suis fier de toi. Allez, mangeons cet éclair avant qu'il ne soit trop tard !",
+                uk: "Я пишаюся тобою. Давай, з'їмо цей еклер, поки не пізно!",
+                choices: [
+                    { fr: "Bon appétit Benjamin, et merci pour ton aide !", uk: "Смачного, Бенжамене, і дякую за твою допомогу!", next: "end" },
+                    { fr: "Oui ! Et après, je dois rentrer voir Tymofii et Natalia.", uk: "Так! А потім мені треба їхати додому до Тимофія та Наталії.", next: "end" }
+                ]
+            },
+            "end": {
+                chapter: 3, chapTitle: "Fin de la journée", npc: "Système",
+                fr: "Félicitations Olha ! Tu as terminé ta journée et pratiqué ton français.",
+                uk: "Вітаємо, Олю! Ти завершила свій день і попрактикувала французьку.",
+                choices: [
+                    { fr: "Rejouer", uk: "Зіграти ще раз", next: "1.1" }
+                ]
+            }
+        };
+
+        const sceneEl = document.getElementById('scene');
+        const bodyEl = document.getElementById('body');
+        const chapterTitleEl = document.getElementById('chapter-title');
+
+        function loadNode(nodeId) {
+            const node = story[nodeId];
+            
+            // Mise à jour du chapitre (fond et titre)
+            bodyEl.className = 'chap' + node.chapter;
+            chapterTitleEl.innerText = node.chapTitle;
+
+            // Vider la scène
+            sceneEl.innerHTML = '';
+
+            // Création du bloc PNJ
+            const npcContainer = document.createElement('div');
+            npcContainer.className = 'npc-container';
+            
+            const npcName = document.createElement('div');
+            npcName.className = 'npc-name';
+            npcName.innerText = node.npc;
+
+            const npcBubble = document.createElement('div');
+            npcBubble.className = 'bubble-npc';
+            npcBubble.innerHTML = `
+                <span class="fr-text">${node.fr}</span>
+                <span class="uk-text">${node.uk}</span>
+            `;
+
+            npcContainer.appendChild(npcName);
+            npcContainer.appendChild(npcBubble);
+            sceneEl.appendChild(npcContainer);
+
+            // Création des choix du joueur
+            const choicesContainer = document.createElement('div');
+            choicesContainer.className = 'choices-container';
+
+            node.choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.innerHTML = `
+                    <span class="fr-text">${choice.fr}</span>
+                    <span class="uk-text">${choice.uk}</span>
+                `;
+                btn.onclick = () => loadNode(choice.next);
+                choicesContainer.appendChild(btn);
+            });
+
+            sceneEl.appendChild(choicesContainer);
+        }
+
+        // Lancer le jeu au chargement
+        window.onload = () => loadNode("1.1");
+    </script>
+</body>
+</html>
